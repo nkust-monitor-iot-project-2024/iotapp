@@ -10,6 +10,11 @@ import { SmartScanRecordScreen } from './screens/SmartScanRecordScreen';
 import { RecordsScreen } from './screens/RecordsScreen';
 import {  Tv, ScanFace, HistoryIcon } from 'lucide-react-native';
 
+import { ApolloProvider } from '@apollo/client';
+import client from './apolloClient';
+import EntityList from './EntityList';
+
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
@@ -51,54 +56,56 @@ function SmartScanStack() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <NavigationContainer>
-        <Tab.Navigator
-          screenOptions={({ route }) => ({
-            headerStyle: {
-              backgroundColor: '#6200ee',
-            },
-            headerTintColor: '#fff',
-            tabBarStyle: {
-              backgroundColor: '#fff',
-              borderTopWidth: 0,
-              elevation: 3,
-            },
-            tabBarActiveTintColor: '#6200ee',
-            tabBarInactiveTintColor: '#aaa',
-            tabBarIcon: ({ color, size }) => {
-              let icon;
-              switch (route.name) {
-                case 'Live':
-                  icon = <Tv color={color} size={size} />;
-                  break;
-                case 'SmartScan':
-                  icon = <ScanFace color={color} size={size} />;
-                  break;
-                case 'Records':
-                  icon = <HistoryIcon color={color} size={size} />;
-                  break;
-              }
-              return icon;
-            },
-          })}
-        >
-          <Tab.Screen
-            name="Live"
-            component={MonitorStack}
-            options={{ title: 'LIVE' }}
-          />
-          <Tab.Screen
-            name="SmartScan"
-            component={SmartScanStack} // 修正：改用 SmartScanStack
-            options={{ title: '智慧偵測' }}
-          />
-          <Tab.Screen
-            name="Records"
-            component={RecordsScreen}
-            options={{ title: '錄影回放' }}
-          />
-        </Tab.Navigator>
-      </NavigationContainer>
+      <ApolloProvider client={client}>
+        <NavigationContainer>
+          <Tab.Navigator
+            screenOptions={({ route }) => ({
+              headerStyle: {
+                backgroundColor: '#6200ee',
+              },
+              headerTintColor: '#fff',
+              tabBarStyle: {
+                backgroundColor: '#fff',
+                borderTopWidth: 0,
+                elevation: 3,
+              },
+              tabBarActiveTintColor: '#6200ee',
+              tabBarInactiveTintColor: '#aaa',
+              tabBarIcon: ({ color, size }) => {
+                let icon;
+                switch (route.name) {
+                  case 'Live':
+                    icon = <Tv color={color} size={size} />;
+                    break;
+                  case 'SmartScan':
+                    icon = <ScanFace color={color} size={size} />;
+                    break;
+                  case 'Records':
+                    icon = <HistoryIcon color={color} size={size} />;
+                    break;
+                }
+                return icon;
+              },
+            })}
+          >
+            <Tab.Screen
+              name="Live"
+              component={MonitorStack}
+              options={{ title: 'LIVE' }}
+            />
+            <Tab.Screen
+              name="SmartScan"
+              component={SmartScanStack}
+              options={{ title: '智慧偵測' }}
+            />
+            <Tab.Screen
+              name="Records"
+              component={RecordsScreen}
+              options={{ title: '錄影回放' }}
+            />
+          </Tab.Navigator>
+        </NavigationContainer>
+      </ApolloProvider>
     </SafeAreaProvider>
   );
 }

@@ -1,0 +1,39 @@
+
+     
+      <ScrollView
+        onScroll={({ nativeEvent }) => {
+          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+          const currentOffsetY = layoutMeasurement.height + contentOffset.y;
+          const isBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 120;
+          if (isBottom) {
+            loadMore();
+          }
+        }}
+        scrollEventThrottle={150}
+      >
+        {data.map(({ node }) => (
+          <View key={node.id} style={styles.card}>
+            <Image
+              source={{ uri: node.url }}
+              style={styles.image}
+            />
+            <View style={styles.cardContent}>
+              <Text style={styles.label}>{node.label} <Text style={styles.confidence}>({node.confidence})</Text></Text>
+              <Text style={styles.date}>{new Date(node.createdAt).toLocaleString()}</Text>
+            </View>
+          </View>
+        ))}
+        {/* <View style={styles.paginationContainer}>
+          {cursorStack.length > 0 && (
+            <TouchableOpacity style={styles.button} onPress={handlePrevious}>
+              <Text style={styles.buttonText}>上一頁</Text>
+            </TouchableOpacity>
+          )}
+          {data.monitor.entities.pageInfo.hasNextPage && (
+            <TouchableOpacity style={styles.button} onPress={handleNext}>
+              <Text style={styles.buttonText}>下一頁</Text>
+            </TouchableOpacity>
+          )}
+        </View> */}
+      </ScrollView>
+      

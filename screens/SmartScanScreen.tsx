@@ -1,43 +1,41 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  TouchableOpacity,
-  Switch,
-} from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Switch, } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAtom } from 'jotai';
 import { monitorAtom } from '../atoms/monitor';
-import { Monitor } from 'lucide-react-native';
+
+import { gql } from '@apollo/client';
+import { useQuery } from '@apollo/client';
+
+const LIST_MONITORS = gql`
+  query GetMonitors {
+    monitors {
+      id
+    }
+  }
+`;
 
 type Monitor = {
-  id: number;
-  name: string;
-  isDetectionOn: boolean;
-};
+  id: string;
+}
 
 export function SmartScancreen() {
   const navigation = useNavigation();
-  const [monitor, setMonitor] = useState<Monitor[]>([
-    { id: 1, name: 'Main Monitor', isDetectionOn: true },
-    { id: 2, name: 'Backyard', isDetectionOn: false },
-    { id: 3, name: 'Garage', isDetectionOn: true },
-    { id: 4, name: 'Living Room', isDetectionOn: false },
-  ]);
+  const [activeMonitor, setActiveMonitor] = useAtom(monitorAtom);
 
-  const [activeMontior, setActiveMonitor] = useAtom(monitorAtom);
+  const { loading, error, data } = useQuery(LIST_MONITORS);
+
+  if (loading) {
+    return <Text style={styles.placeholder}>Loading...</Text>;
+  }
+
+  if (error) {
+    return <Text style={styles.error}>Error: {error.message}</Text>;
+  }
 
   // 切換偵測狀態
-  const toggleDetection = (id: number) => {
-    setMonitor((prevList) =>
-      prevList.map((monitor) =>
-        monitor.id === id
-          ? { ...monitor, isDetectionOn: !monitor.isDetectionOn }
-          : monitor
-      )
-    );
+  const toggleDetection = (id: string) => {
+    // Optimistic UI update can be added here if needed.
   };
 
   // 監視器清單的渲染
@@ -46,14 +44,14 @@ export function SmartScancreen() {
       <TouchableOpacity
         style={styles.monitorInfo}
         onPress={() => {
-          setActiveMonitor({ name: item.name })
+          setActiveMonitor({ id: item.id });
           navigation.navigate('SmartScanRecordScreen');
         }}
       >
-        <Text style={styles.monitorName}>{item.name}</Text>
+        <Text style={styles.monitorName}>{item.id ?? "<未分類>"}</Text>
       </TouchableOpacity>
       <Switch
-        value={item.isDetectionOn}
+        value={false}
         onValueChange={() => toggleDetection(item.id)}
       />
     </View>
@@ -62,9 +60,10 @@ export function SmartScancreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>智慧偵測</Text>
+      
       <FlatList
-        data={monitor}
-        keyExtractor={(item) => item.id.toString()}
+        data={data.monitors}
+        keyExtractor={(item, index) => (item.id ? item.id.toString() : `item-${index}`)}
         renderItem={renderMonitorItem}
       />
     </View>
@@ -100,5 +99,14 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  placeholder: {
+    fontSize: 16,
+    color: '#aaa',
+    textAlign: 'center',
+  },
+  error: {
+    fontSize: 16,
+    color: 'red',
+    textAlign: 'center',
+  },
 });
-

@@ -3,9 +3,9 @@ import { View, Text, StyleSheet, Button } from 'react-native';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { useEvent } from 'expo';
 
-const videoSource = "https://hls-10319920-6785-4329-a29f-97593ad34500.zeabur.app/teststream/index.m3u8"
+const videoSource = "https://hls.iot-project.pan93.com/teststream/index.m3u8"
 
-export function LiveDetailScreen({ route }) {
+export function LiveDetailScreen({ route }) { 
   const { monitorName } = route.params;
   const [isRecording, setIsRecording] = useState(false);
 
@@ -20,7 +20,7 @@ export function LiveDetailScreen({ route }) {
     <View style={styles.contentContainer}>
       <VideoView style={styles.video} player={player} allowsFullscreen allowsPictureInPicture />
       <View style={styles.controlsContainer}>
-        <Button
+        {/* <Button
           title={isPlaying ? 'Pause' : 'Play'}
           onPress={() => {
             if (isPlaying) {
@@ -29,7 +29,7 @@ export function LiveDetailScreen({ route }) {
               player.play();
             }
           }}
-        />
+        /> */}
       </View>
     </View>
   );
