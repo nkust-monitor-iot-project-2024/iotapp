@@ -7,6 +7,7 @@ interface MonitorViewProps {
 }
 
 export function MonitorView({ name, onPress }: MonitorViewProps) {
+  //顯示監視器名稱
   return (
     <TouchableOpacity style={styles.container} onPress={onPress}>
       <Text style={styles.text}>{name}</Text>

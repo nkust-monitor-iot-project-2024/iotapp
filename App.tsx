@@ -8,10 +8,11 @@ import { LiveDetailScreen } from './screens/LiveDetailScreen';
 import { SmartScancreen } from './screens/SmartScanScreen';
 import { SmartScanRecordScreen } from './screens/SmartScanRecordScreen';
 import { RecordsScreen } from './screens/RecordsScreen';
-import {  Tv, ScanFace, HistoryIcon } from 'lucide-react-native';
+import { Tv, ScanFace, HistoryIcon } from 'lucide-react-native';
 
 import { ApolloProvider } from '@apollo/client';
-import client from './apolloClient';
+import SmartScanClient from './SmartScanClient';
+
 import EntityList from './EntityList';
 
 
@@ -35,7 +36,7 @@ function MonitorStack() {
     </Stack.Navigator>
   );
 }
-
+// 智慧偵測堆疊導航
 function SmartScanStack() {
   return (
     <Stack.Navigator>
@@ -53,10 +54,14 @@ function SmartScanStack() {
   );
 }
 
+
+
 export default function App() {
   return (
     <SafeAreaProvider>
-      <ApolloProvider client={client}>
+      <ApolloProvider client={SmartScanClient}>
+
+
         <NavigationContainer>
           <Tab.Navigator
             screenOptions={({ route }) => ({

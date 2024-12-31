@@ -1,10 +1,11 @@
 import { useAtom } from 'jotai';
+import Modal from 'react-native-modal';
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Image, FlatList, TouchableOpacity } from 'react-native';
 import { monitorAtom } from '../atoms/monitor';
-import { gql } from '@apollo/client';
-import { useQuery } from '@apollo/client';
+import { gql, useQuery } from '@apollo/client';
 
+//GraphQL查詢 辨識紀錄
 const LIST_ENTITIES = gql`
   query ListEntities($monitor: String, $before: String) {
     monitor(id: $monitor) {
@@ -37,7 +38,7 @@ export interface ListEntitiesResponse {
         endCursor: string;
       };
     };
-  }
+  };
 }
 
 export interface EntityNode {
@@ -52,7 +53,7 @@ export interface Entity {
   createdAt: string;
   url: string;
 }
-
+//使用GraphQL查詢
 export const useEntities = (monitor: string | undefined) => {
   const [items, setItems] = useState<EntityNode[]>([]);
   const { loading, error, data } = useQuery<ListEntitiesResponse>(LIST_ENTITIES, {
@@ -61,68 +62,69 @@ export const useEntities = (monitor: string | undefined) => {
 
   const currentPageItems: EntityNode[] = data?.monitor.entities.edges ?? [];
 
-  return ({
+  return {
     loading,
     error,
     data: [...items, ...currentPageItems],
     loadMore: () => {
-      // put the current page items into the items array
-      // useQuery will automatically refetch the query with the new cursor
       setItems([...items, ...currentPageItems]);
     },
-  })
+  };
 };
 
-const EntityDetails = ({ monitor }: {
-  monitor: string | undefined;
-}) => {
+const EntityDetails = ({ monitor }: { monitor: string | undefined }) => {
   const { loading, error, data, loadMore } = useEntities(monitor);
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
-  // const handleNext = () => {
-  //   if (!data) {
-  //     return;
-  //   }
+  const openModal = (imageUrl: string) => {
+    setSelectedImage(imageUrl);
+    setModalVisible(true);
+  };
 
-  //   if (data.monitor.entities.pageInfo.hasNextPage) {
-  //     setCursorStack([...cursorStack, data.monitor.entities.pageInfo.endCursor]);
-  //     setBefore(data.monitor.entities.pageInfo.endCursor);
-  //   }
-  // };
-
-  // const handlePrevious = () => {
-  //   const newCursorStack = [...cursorStack];
-  //   const previousCursor = newCursorStack.pop();
-  //   setCursorStack(newCursorStack);
-  //   setBefore(previousCursor || null);
-  // };
-
+  const closeModal = () => {
+    setSelectedImage(null);
+    setModalVisible(false);
+  };
+//顯示辨識紀錄
   return (
     <View style={styles.detailsContainer}>
       {error && <Text style={styles.error}>Error: {error?.message}</Text>}
       <FlatList
         data={data}
         renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Image
-              source={{ uri: item.node.url }}
-              style={styles.image}
-            />
-            <View style={styles.cardContent}>
-              <Text style={styles.label}>{item.node.label} <Text style={styles.confidence}>({item.node.confidence})</Text></Text>
-              <Text style={styles.date}>{new Date(item.node.createdAt).toLocaleString()}</Text>
+          <TouchableOpacity onPress={() => openModal(item.node.url)}>
+            <View style={styles.card}>
+              <Image source={{ uri: item.node.url }} style={styles.image} />
+              <View style={styles.cardContent}>
+                <Text style={styles.label}>
+                  {item.node.label} <Text style={styles.confidence}>({item.node.confidence})</Text>
+                </Text>
+                <Text style={styles.date}>{new Date(item.node.createdAt).toLocaleString()}</Text>
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
         keyExtractor={item => item.node.id}
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
       />
+
+      {/* 全屏模態框 */}
+      
+      <Modal isVisible={isModalVisible} onBackdropPress={closeModal}>
+        <View style={styles.modalContent}>
+          {selectedImage && (
+            <Image source={{ uri: selectedImage }} style={styles.fullImage} resizeMode="contain" />
+          )}
+        </View>
+      </Modal>
     </View>
   );
 };
 
 export function SmartScanRecordScreen() {
-  const [activeMonitor, _] = useAtom(monitorAtom);
+  const [activeMonitor] = useAtom(monitorAtom);
 
   return (
     <View style={styles.container}>
@@ -155,6 +157,7 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: 200,
+    objectFit: 'contain',
   },
   cardContent: {
     padding: 15,
@@ -173,27 +176,14 @@ const styles = StyleSheet.create({
     color: '#666',
     marginTop: 5,
   },
-  paginationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 20,
+  modalContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  button: {
-    backgroundColor: '#007acc',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 5,
-  },
-  buttonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  placeholder: {
-    fontSize: 16,
-    color: '#aaa',
-    textAlign: 'center',
+  fullImage: {
+    width: '100%',
+    height: '80%',
   },
   error: {
     fontSize: 16,

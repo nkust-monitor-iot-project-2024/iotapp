@@ -6,7 +6,7 @@ import { monitorAtom } from '../atoms/monitor';
 
 import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client';
-
+//GraphQL查詢 監視器清單
 const LIST_MONITORS = gql`
   query GetMonitors {
     monitors {
